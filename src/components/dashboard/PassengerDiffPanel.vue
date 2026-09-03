@@ -3,6 +3,11 @@ import PanelHeader from './PanelHeader.vue';
 
 defineProps({
     rows: { type: Array, required: true }, // [{ hourLabel, day2, day3, diff }]
+    // Ustun sarlavhalari (masalan '2-sentyabr' / '3-sentyabr')
+    label2: { type: String, default: '2-kun' },
+    label3: { type: String, default: '3-kun' },
+    // Jadval ostidagi "Jami" qatori: { day2, day3, diff? } — berilmasa chiqmaydi
+    totals: { type: Object, default: null },
     grandTotal: { type: Number, default: null }
 });
 
@@ -30,8 +35,8 @@ function fmtDiff(v) {
                 <thead>
                     <tr>
                         <th>Soat</th>
-                        <th>2-kun</th>
-                        <th>3-kun</th>
+                        <th>{{ label2 }}</th>
+                        <th>{{ label3 }}</th>
                         <th>Farqi</th>
                     </tr>
                 </thead>
@@ -43,6 +48,14 @@ function fmtDiff(v) {
                         <td :class="cls(row.diff)">{{ fmtDiff(row.diff) }}</td>
                     </tr>
                 </tbody>
+                <tfoot v-if="totals">
+                    <tr>
+                        <td class="cell-strong">Jami</td>
+                        <td class="cell-strong">{{ fmtNum(totals.day2) }}</td>
+                        <td class="cell-strong">{{ fmtNum(totals.day3) }}</td>
+                        <td :class="cls(totals.diff)">{{ fmtDiff(totals.diff) }}</td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
 
@@ -93,6 +106,18 @@ tbody td {
     font-size: 0.8rem;
     border-bottom: 1px solid var(--lt-border, #f1f2f4);
     white-space: nowrap;
+}
+tfoot td {
+    padding: 0.55rem 0.5rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    background: var(--surface-hover, #f9fafb);
+    border-top: 2px solid var(--lt-border, #e5e7eb);
+}
+tfoot {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
 }
 .cell-muted {
     color: var(--lt-text-secondary, #6b7280);

@@ -1,7 +1,10 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { apps, getSubMenu, sidebarOpen, toggleSidebar } from '@/layout/composables/useModuleNav';
+import { apps as allApps, getSubMenu, sidebarOpen, toggleSidebar } from '@/layout/composables/useModuleNav';
+
+// `hidden: true` belgilangan app'lar sidebar'da chiqmaydi
+const apps = allApps.filter((a) => !a.hidden);
 
 // "Klassik" to'liq balandlikdagi, oq fonli, ochiq/yopiq holatga ega sidebar —
 // loyihaning yagona navigatsiya komponenti (AppLayout.vue shu komponentni ishlatadi).
@@ -22,9 +25,17 @@ function isSubActive(to) {
     return route.path === to;
 }
 
+// Chevron tugmasi — faqat guruhni yig'adi/ochadi, navigatsiya qilmaydi.
 function onAppClick(app) {
     if (!sidebarOpen.value) sidebarOpen.value = true;
     openAppId.value = openAppId.value === app.id ? null : app.id;
+}
+// Guruh sarlavhasining o'zi bosilganda — app o'z sahifasiga o'tadi (router-link)
+// va guruh ochiq holatga keladi (yopilmaydi, aks holda o'tgan zahoti ichki
+// havolalar ko'zdan yo'qoladi).
+function onAppNavigate(app) {
+    if (!sidebarOpen.value) sidebarOpen.value = true;
+    openAppId.value = app.id;
 }
 function onModuleClick(mod) {
     if (!sidebarOpen.value) sidebarOpen.value = true;
@@ -33,12 +44,17 @@ function onModuleClick(mod) {
 
 // Joriy manzilga mos app/modulni avtomatik ochiq holatga keltiradi.
 function syncActiveFromRoute() {
-    const app = apps.find((a) => a.modules?.some((m) => route.path === m.to || route.path.startsWith(m.to + '/')));
-    if (app) {
-        openAppId.value = app.id;
-        const mod = app.modules.find((m) => route.path === m.to || route.path.startsWith(m.to + '/'));
+    // Avval ichki havola (modul) bo'yicha, topilmasa app'ning o'z sahifasi
+    // (`to`/`activeMatch`) bo'yicha — ikkala holatda ham guruh ochiq turadi.
+    const byModule = apps.find((a) => a.modules?.some((m) => route.path === m.to || route.path.startsWith(m.to + '/')));
+    if (byModule) {
+        openAppId.value = byModule.id;
+        const mod = byModule.modules.find((m) => route.path === m.to || route.path.startsWith(m.to + '/'));
         if (mod && getSubMenu(mod)) openModuleId.value = mod.to;
+        return;
     }
+    const byApp = apps.find((a) => a.modules?.length && isAppActive(a));
+    if (byApp) openAppId.value = byApp.id;
 }
 // Boshlang'ich holatda hech qaysi app joriy manzilga mos kelmasa ham, birinchi
 // modulli app ochiq holatda tursin.
@@ -69,13 +85,23 @@ watch(() => route.path, syncActiveFromRoute);
                     <span v-if="sidebarOpen" class="asc-item-label">{{ app.label }}</span>
                 </router-link>
 
-                <!-- Modulli app — yig'iladigan guruh -->
+                <!-- Modulli app — o'zi ham havola, chevron orqali ichki havolalari ochiladi -->
                 <div v-else class="asc-group">
-                    <button type="button" class="asc-item asc-item--btn" :class="{ 'asc-item--active': isAppActive(app) }" @click="onAppClick(app)" :title="app.label">
+                    <component
+                        :is="app.to ? 'router-link' : 'button'"
+                        :to="app.to"
+                        :type="app.to ? undefined : 'button'"
+                        class="asc-item asc-item--btn"
+                        :class="{ 'asc-item--active': isAppActive(app) }"
+                        :title="app.label"
+                        @click="app.to ? onAppNavigate(app) : onAppClick(app)"
+                    >
                         <span class="asc-item-icon"><font-awesome-icon :icon="app.faIcon" /></span>
                         <span v-if="sidebarOpen" class="asc-item-label">{{ app.label }}</span>
-                        <i v-if="sidebarOpen" class="pi pi-chevron-down asc-item-chevron" :class="{ 'asc-item-chevron--open': openAppId === app.id }"></i>
-                    </button>
+                        <button v-if="sidebarOpen" type="button" class="asc-chevron-btn" :title="openAppId === app.id ? 'Yopish' : 'Ochish'" @click.prevent.stop="onAppClick(app)">
+                            <i class="pi pi-chevron-down asc-item-chevron" :class="{ 'asc-item-chevron--open': openAppId === app.id }"></i>
+                        </button>
+                    </component>
 
                     <div v-if="sidebarOpen && openAppId === app.id" class="asc-submodules">
                         <template v-for="mod in app.modules" :key="mod.to">
@@ -250,6 +276,29 @@ watch(() => route.path, syncActiveFromRoute);
 }
 .asc-item-chevron--open {
     transform: rotate(180deg);
+}
+/* Chevron sarlavha havolasi ICHIDA turadi — bosilganda navigatsiya emas, faqat
+   guruh yig'iladi/ochiladi (template'dagi @click.prevent.stop). */
+.asc-chevron-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.4rem;
+    height: 1.4rem;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+.asc-chevron-btn:hover {
+    background: rgba(100, 116, 139, 0.12);
+}
+.asc-chevron-btn:focus-visible {
+    box-shadow: 0 0 0 2px #bfdbfe;
+    outline: none;
 }
 
 /* ── 2-daraja: modullar (ikonkasiz, chiziqcha bilan indent) ── */

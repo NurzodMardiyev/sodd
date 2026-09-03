@@ -1,11 +1,14 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { METRO_LINES } from '@/data/tashkentMetro';
 import KpiCardSimple from '@/components/dashboard/KpiCardSimple.vue';
 import DistrictFilterBar from '@/components/dashboard/DistrictFilterBar.vue';
 import TransportMapCard from '@/components/dashboard/TransportMapCard.vue';
 import RouteBusTablePanel from '@/components/dashboard/RouteBusTablePanel.vue';
 import LoadListPanel from '@/components/dashboard/LoadListPanel.vue';
 import RoutesStreetsPanel from '@/components/dashboard/RoutesStreetsPanel.vue';
+import MetroLinesPanel from '@/components/dashboard/MetroLinesPanel.vue';
+import MetroLineDetailPanel from '@/components/dashboard/MetroLineDetailPanel.vue';
 import PassengerDiffPanel from '@/components/dashboard/PassengerDiffPanel.vue';
 import TrafficTimeTablePanel from '@/components/dashboard/TrafficTimeTablePanel.vue';
 import TrafficOverviewPanel from '@/components/dashboard/TrafficOverviewPanel.vue';
@@ -34,7 +37,7 @@ function selectRoute(name) {
 
 // Tuman bo'yicha filtr — hozircha faqat UI, ma'lumotlar ulanganda tanlangan
 // tumanga qarab har bir panel massivini filtrlash kifoya.
-const districts = ["Barchasi", 'Uchtepa', 'Yunusobod', "Mirzo Ulug'bek", 'Mirobod', 'Shayhontohur', 'Chilonzor', 'Yangi hayot', 'Yashnobod', 'Bektemir', 'Olmazor', 'Sergeli', 'Yakkasaroy'];
+const districts = ['Barchasi', 'Uchtepa', 'Yunusobod', "Mirzo Ulug'bek", 'Mirobod', 'Shayhontohur', 'Chilonzor', 'Yangi hayot', 'Yashnobod', 'Bektemir', 'Olmazor', 'Sergeli', 'Yakkasaroy'];
 const activeDistrict = ref('Barchasi');
 
 // ---------------------------------------------------------------------------
@@ -42,6 +45,14 @@ const activeDistrict = ref('Barchasi');
 // hujjatidagi BARCHA ma'lumotlar shu yerda, hech narsa tashlab ketilmagan.
 // API ulanganda har bir massivni tegishli service javobiga almashtirish kifoya.
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// METRO — bekatlar sig'imi. Hozircha ma'lumot YO'Q — barcha bekatlar 0.
+// Rasmiy raqamlar kelganda shu obyektga bekat nomi (src/data/tashkentMetro.js
+// bilan bir xil) => sig'im ko'rinishida yoziladi; yozilmagan bekat 0 qoladi.
+// ---------------------------------------------------------------------------
+const metroStationCapacity = {};
+const metroLines = computed(() => METRO_LINES.map((line) => ({ ...line, stations: line.stations.map((s) => ({ ...s, capacity: metroStationCapacity[s.name] ?? 0 })) })));
 
 const kpis = [
     {
@@ -70,7 +81,7 @@ const kpis = [
         view: 'metro',
         subStats: [
             { label: 'Yer usti', value: '234' },
-            { label: 'Yer osti', value: '123' },
+            { label: 'Yer osti', value: '123' }
         ]
         // turlari hozircha yo'q — subStats keyinroq qo'shiladi
     },
@@ -83,7 +94,7 @@ const kpis = [
         subStats: [
             { label: 'OTM', value: '234' },
             { label: 'Maktablar', value: '123' },
-            { label: 'Bog\'chalar', value: '13' }
+            { label: "Bog'chalar", value: '13' }
         ]
     },
     {
@@ -165,7 +176,22 @@ const crossroadsLoadRows = [
     { name: "Katta halqa yo'li — Chilonzor", score: 5 },
     { name: "Mustaqillik shoh ko'chasi — Navoiy ko'chasi", score: 4 },
     { name: "Shota Rustaveli — Bog'ishamol", score: 3 },
-    { name: "Yunusobod — Nihol", score: 2 }
+    { name: 'Yunusobod — Nihol', score: 2 }
+];
+
+// Metro rejimida shu panel "Stansiyalar yuklamasi" bo'lib chiqadi (1-10 ball).
+// Hozircha static demo — API ulanganda almashtiriladi. Bo'sh massiv bo'lsa
+// panel "Ma'lumot yig'ilmoqda" ko'rsatadi.
+const stationLoadRows = [
+    { name: 'Chilonzor', score: 9 },
+    { name: 'Beruniy', score: 8 },
+    { name: 'Alisher Navoiy', score: 8 },
+    { name: 'Paxtakor', score: 7 },
+    { name: "Buyuk ipak yo'li", score: 7 },
+    // Eng kam yuklangan bekatlar
+    { name: 'Turkiston', score: 2 },
+    { name: 'Tuzel', score: 2 },
+    { name: 'Chinor', score: 1 }
 ];
 
 // Tirbandlik rejimida "Avtobuslarning holati" o'rniga chiqadigan ko'chalar
@@ -185,12 +211,12 @@ const streetsLoadRows = [
 // nechta ko'chani qamrab olishi. Qatorni bosish xaritada marshrut yo'nalishini
 // ko'rsatadi (TransportMapCard'ga selectedRoute sifatida uzatiladi).
 const routesStreetsRows = [
-    { name: '1 -son', streets: ["Bunyodkor ko'chasi", 'Amir Temur shoh ko\'chasi', "Yunusobod ko'chasi"], asfaltBor: 3, asfaltYoq: 0 },
+    { name: '1 -son', streets: ["Bunyodkor ko'chasi", "Amir Temur shoh ko'chasi", "Yunusobod ko'chasi"], asfaltBor: 3, asfaltYoq: 0 },
     { name: '2 -son', streets: ["Farhod ko'chasi", "Lutfiy ko'chasi"], asfaltBor: 1, asfaltYoq: 1 },
     { name: '4 -son', streets: ["Chilonzor ko'chasi", "Bog'ishamol ko'chasi"], asfaltBor: 2, asfaltYoq: 0 },
-    { name: '5 -son', streets: ["Mustaqillik shoh ko'chasi", "Navoiy ko'chasi", 'Shota Rustaveli ko\'chasi'], asfaltBor: 2, asfaltYoq: 1 },
+    { name: '5 -son', streets: ["Mustaqillik shoh ko'chasi", "Navoiy ko'chasi", "Shota Rustaveli ko'chasi"], asfaltBor: 2, asfaltYoq: 1 },
     { name: '7 -son', streets: ["Katta halqa yo'li"], asfaltBor: 0, asfaltYoq: 1 },
-    { name: '8 -son', streets: ["Bunyodkor ko'chasi", "Mirzo Ulug'bek ko'chasi", 'Amir Temur shoh ko\'chasi'], asfaltBor: 3, asfaltYoq: 0 },
+    { name: '8 -son', streets: ["Bunyodkor ko'chasi", "Mirzo Ulug'bek ko'chasi", "Amir Temur shoh ko'chasi"], asfaltBor: 3, asfaltYoq: 0 },
     { name: '12 -son', streets: ["Yunusobod ko'chasi", "Nihol ko'chasi"], asfaltBor: 1, asfaltYoq: 1 },
     { name: '18 -son', streets: ["Chilonzor ko'chasi", "Bog'ishamol ko'chasi", "Mustaqillik shoh ko'chasi"], asfaltBor: 3, asfaltYoq: 0 }
 ];
@@ -203,6 +229,48 @@ const passengerDiffRows = [
     { hourLabel: '09.00-10.00', day2: 45797, day3: 41732, diff: -4065 },
     { hourLabel: '10.00-11.00', day2: 36647, day3: 32415, diff: -4232 }
 ];
+
+// Metro — yo'lovchilar oqimi solishtirmasi (02.09 va 03.09, soatlar bo'yicha).
+// 03.09 uchun 17.00 dan keyingi soatlar hali kelmagan — null (jadvalda '–').
+const metroPassengerDiffRows = [
+    { hourLabel: '05.00-06.00', day2: 6523, day3: 4751, diff: -1772 },
+    { hourLabel: '06.00-07.00', day2: 21481, day3: 15796, diff: -5685 },
+    { hourLabel: '07.00-08.00', day2: 53692, day3: 47516, diff: -6176 },
+    { hourLabel: '08.00-09.00', day2: 64278, day3: 62404, diff: -1874 },
+    { hourLabel: '09.00-10.00', day2: 45797, day3: 41732, diff: -4065 },
+    { hourLabel: '10.00-11.00', day2: 36647, day3: 32415, diff: -4232 },
+    { hourLabel: '16.00-17.00', day2: 32692, day3: 30059, diff: -2633 },
+    { hourLabel: '17.00-18.00', day2: 41627, day3: null, diff: null },
+    { hourLabel: '18.00-19.00', day2: 52443, day3: null, diff: null },
+    { hourLabel: '19.00-20.00', day2: 35894, day3: null, diff: null }
+];
+const metroPassengerDiffTotals = { day2: 391074, day3: 234673, diff: null };
+
+// Yuklamasi eng yuqori yo'nalish — Chilonzor yo'nalishi bo'yicha soatlik
+// ma'lumot (interval, harakat tarkibi, reja sig'imi, 02.09 va 03.09 tashilgan).
+// 03.09 uchun 17.00 dan keyingi soatlar hali kelmagan — null.
+const chilonzorLineRows = [
+    { hourLabel: '05.00-06.00', intervalMin: 12, trains: 7, capacity: 7000, day2: 2322, day3: 1988 },
+    { hourLabel: '06.00-07.00', intervalMin: 5, trains: 11, capacity: 16100, day2: 8479, day3: 7046 },
+    { hourLabel: '07.00-08.00', intervalMin: 2.7, trains: 27, capacity: 28980, day2: 20165, day3: 20833 },
+    { hourLabel: '08.00-09.00', intervalMin: 2.5, trains: 28, capacity: 33600, day2: 24322, day3: 26323 },
+    { hourLabel: '09.00-10.00', intervalMin: 3, trains: 26, capacity: 29400, day2: 15746, day3: 17230 },
+    { hourLabel: '10.00-11.00', intervalMin: 5, trains: 15, capacity: 16800, day2: 12992, day3: 13335 },
+    { hourLabel: '11.00-12.00', intervalMin: 4.8, trains: 16, capacity: 17150, day2: 13486, day3: 13347 },
+    { hourLabel: '12.00-13.00', intervalMin: 4.5, trains: 18, capacity: 18620, day2: 14638, day3: 15645 },
+    { hourLabel: '13.00-14.00', intervalMin: 4.5, trains: 18, capacity: 18620, day2: 15319, day3: 16911 },
+    { hourLabel: '14.00-15.00', intervalMin: 4.5, trains: 18, capacity: 18620, day2: 14166, day3: 15208 },
+    { hourLabel: '15.00-16.00', intervalMin: 4.5, trains: 18, capacity: 18620, day2: 14689, day3: 15322 },
+    { hourLabel: '16.00-17.00', intervalMin: 3, trains: 26, capacity: 28000, day2: 16350, day3: 15037 },
+    { hourLabel: '17.00-18.00', intervalMin: 3, trains: 26, capacity: 28000, day2: 5219, day3: null },
+    { hourLabel: '18.00-19.00', intervalMin: 3, trains: 26, capacity: 28000, day2: 26226, day3: null },
+    { hourLabel: '19.00-20.00', intervalMin: 3.5, trains: 22, capacity: 23380, day2: 17951, day3: null },
+    { hourLabel: '20.00-21.00', intervalMin: 4.5, trains: 17, capacity: 18900, day2: 13425, day3: null },
+    { hourLabel: '21.00-22.00', intervalMin: 5.5, trains: 14, capacity: 15400, day2: 8868, day3: null },
+    { hourLabel: '22.00-23.00', intervalMin: 7, trains: 12, capacity: 12250, day2: 6683, day3: null },
+    { hourLabel: '23.00-00.00', intervalMin: 10.5, trains: 8, capacity: 7980, day2: 5285, day3: null }
+];
+const chilonzorLineTotals = { capacity: 385420, day2: 256331, day3: 178225 };
 
 const trafficMorningRows = [
     { no: 1, time: '05:00-06:00', v1: 81005, v2: 79624, diff: -1381, pct: -2 },
@@ -283,6 +351,11 @@ const congestion = {
                 <LoadListPanel title="Ko'chalar yuklamasi" :rows="streetsLoadRows" location-word="ko'chasida" />
                 <LoadListPanel title="Chorraxalar yuklamasi" :rows="crossroadsLoadRows" />
             </template>
+            <!-- Metro rejimida avtobus jadvali o'rniga yo'nalishlar/bekatlar paneli, chorraxalar o'rniga stansiyalar yuklamasi -->
+            <template v-else-if="activeView === 'metro'">
+                <MetroLinesPanel :lines="metroLines" />
+                <LoadListPanel title="Stansiyalar yuklamasi" location-word="bekatida" :show-alert="false" :rows="stationLoadRows" />
+            </template>
             <template v-else>
                 <RouteBusTablePanel :rows="busStatusRows" />
                 <RoutesStreetsPanel :rows="routesStreetsRows" :selected="selectedRoute" @select="selectRoute" />
@@ -290,11 +363,15 @@ const congestion = {
         </div>
 
         <div class="row row--4col" :class="{ 'row--4col-wide1': activeView === 'buses' }">
-            <PassengerDiffPanel v-if="activeView === 'metro'" :rows="passengerDiffRows" :grand-total="763363" />
+            <PassengerDiffPanel v-if="activeView === 'metro'" :rows="metroPassengerDiffRows" :totals="metroPassengerDiffTotals" label2="2-sentyabr" label3="3-sentyabr" />
             <TrafficTimeTablePanel v-else compare-label1="sentyabr (02.09.2026 chorshanba)" compare-label2="sentyabr (03.09.2026 payshanba)" :morning-rows="trafficMorningRows" :evening-rows="trafficEveningRows" />
-            <CongestionPanel v-if="activeView !== 'buses'" v-bind="congestion" />
-            <CityEntryTransportPanel v-if="activeView === 'tirbandlik'" date-note="02 sentyabr holatiga" :rows="cityEntryRows" :total="cityEntryTotal" />
-            <RouteDispatchPanel v-else :main-rows="dispatchMainRows" :main-total="dispatchMainTotal" :company-rows="dispatchCompanyRows" :company-total="dispatchCompanyTotal" :grand-total="dispatchGrandTotal" />
+            <!-- Metro rejimida tirbandlik + dispetcher kartalari o'rniga bitta keng karta (2 ustun) -->
+            <MetroLineDetailPanel v-if="activeView === 'metro'" class="span-2" title="Yuklamasi eng yuqori yo'nalish" subtitle="Chilonzor yo'nalishi" line-color="#E53E3E" :rows="chilonzorLineRows" :totals="chilonzorLineTotals" />
+            <template v-else>
+                <CongestionPanel v-if="activeView !== 'buses'" v-bind="congestion" />
+                <CityEntryTransportPanel v-if="activeView === 'tirbandlik'" date-note="02 sentyabr holatiga" :rows="cityEntryRows" :total="cityEntryTotal" />
+                <RouteDispatchPanel v-else :main-rows="dispatchMainRows" :main-total="dispatchMainTotal" :company-rows="dispatchCompanyRows" :company-total="dispatchCompanyTotal" :grand-total="dispatchGrandTotal" />
+            </template>
             <TrafficOverviewPanel compare-label1="sentyabr (02.09.2026 chorshanba)" compare-label2="sentyabr (03.09.2026 payshanba)" :morning-rows="trafficMorningRows" :evening-rows="trafficEveningRows" />
         </div>
     </div>
@@ -357,6 +434,10 @@ const congestion = {
 .row--4col-wide1 {
     grid-template-columns: 2fr 1fr 1fr;
 }
+/* Ikki ustunni egallaydigan karta (metro rejimidagi yo'nalish jadvali) */
+.row--4col .span-2 {
+    grid-column: span 2;
+}
 @media (max-width: 1500px) {
     .kpi-row {
         grid-template-columns: repeat(3, 1fr);
@@ -378,6 +459,9 @@ const congestion = {
     .row--4col {
         grid-template-columns: 1fr;
         overflow-y: auto;
+    }
+    .row--4col .span-2 {
+        grid-column: auto;
     }
 }
 @media (max-width: 700px) {

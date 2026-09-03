@@ -14,7 +14,9 @@ const props = defineProps({
     iconBg: { type: String, default: '#fee2e2' },
     iconColor: { type: String, default: '#dc2626' },
     rows: { type: Array, required: true }, // [{ name, score }] — score: 1-10 ball
-    locationWord: { type: String, default: 'kesishmasida' } // ogohlantirish matnida: "... {locationWord} N ballik tirbandlik"
+    locationWord: { type: String, default: 'kesishmasida' }, // ogohlantirish matnida: "... {locationWord} N ballik tirbandlik"
+    // Yuqori (>=8 ball) yuklama uchun ogohlantirish banneri — metro rejimida o'chiriladi.
+    showAlert: { type: Boolean, default: true }
 });
 
 function level(score) {
@@ -37,14 +39,20 @@ const critical = computed(() => sortedRows.value.filter((r) => r.lvl === 'critic
             <span class="live-badge"><span class="live-dot"></span>Jonli</span>
         </div>
 
-        <div v-if="critical.length" class="alert-banner">
+        <div v-if="showAlert && critical.length" class="alert-banner">
             <i class="pi pi-exclamation-triangle"></i>
             <span v-for="(row, i) in critical" :key="row.name">
                 <strong>{{ row.name }}</strong> {{ locationWord }} <strong>{{ row.score }} ballik</strong> tirbandlik aniqlandi!<template v-if="i < critical.length - 1"> </template>
             </span>
         </div>
 
-        <div class="list">
+        <!-- Ma'lumot yo'q (masalan, metro rejimi — API hali ulanmagan) -->
+        <div v-if="!rows.length" class="empty-state">
+            <i class="pi pi-spin pi-spinner"></i>
+            <span>Ma'lumot yig'ilmoqda</span>
+        </div>
+
+        <div v-else class="list">
             <div v-for="row in sortedRows" :key="row.name" class="row-item">
                 <span class="dot" :style="{ background: LEVEL_COLOR[row.lvl] }"></span>
                 <span class="name">{{ row.name }}</span>
@@ -127,6 +135,21 @@ const critical = computed(() => sortedRows.value.filter((r) => r.lvl === 'critic
     color: #dc2626;
     font-size: 0.9rem;
     margin-top: 0.1rem;
+}
+.empty-state {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--lt-text-secondary, #6b7280);
+}
+.empty-state i {
+    font-size: 0.9rem;
+    color: #94a3b8;
 }
 .list {
     flex: 1;

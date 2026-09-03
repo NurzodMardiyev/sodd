@@ -1,0 +1,49 @@
+:root {
+    --primary-color: var(--p-primary-color);
+    --primary-contrast-color: var(--p-primary-contrast-color);
+    --text-color: var(--p-text-color);
+    --text-color-secondary: var(--p-text-muted-color);
+    --surface-border: var(--p-content-border-color);
+    --surface-card: var(--p-content-background);
+    --surface-hover: var(--p-content-hover-background);
+    --surface-overlay: var(--p-overlay-popover-background);
+    --transition-duration: var(--p-transition-duration);
+    --maskbg: var(--p-mask-background);
+    --content-border-radius: var(--p-content-border-radius);
+    --layout-section-transition-duration: 0.2s;
+    --element-transition-duration: var(--p-transition-duration);
+    --focus-ring-width: var(--p-focus-ring-width);
+    --focus-ring-style: var(--p-focus-ring-style);
+    --focus-ring-color: var(--p-focus-ring-color);
+    --focus-ring-offset: var(--p-focus-ring-offset);
+    --focus-ring-shadow: var(--p-focus-ring-shadow);
+
+    /* ── Layout qobig'i o'lchamlari (AppLayout grid) ── bitta manba, barcha SFC'lar
+       shu yerdan o'qiydi (custom property'lar DOM bo'ylab meros bo'ladi, `scoped`
+       ularni to'smaydi). */
+    --layout-gutter: 10px;
+    --topbar-height: 3.75rem;
+    --sidebar-width: 260px;
+    --sidebar-transition: 0.22s cubic-bezier(0.2, 0.9, 0.25, 1);
+
+    /* AppSidebar.vue (rail, VIEWER/SUPER_ADMIN) — ikon ustuni kengligi va yoniga
+       ochiladigan flyout panel o'lchamlari/oralig'i. */
+    --rail-width: 64px;
+    --rail-panel-offset: 10px;
+    --rail-panel-width: 280px;
+
+    /* AppSidebarClassic.vue (boshqa rollar) — ochiq/yig'ilgan kengliklar,
+       --sidebar-transition bilan animatsiya qilinadi. */
+    --classic-width: 260px;
+    --classic-width-collapsed: 72px;
+
+    /* Qatlamlar */
+    --z-backdrop: 40;
+    --z-dropdown: 50;
+    /* Mobil ochiladigan (off-canvas) sidebar qatlami — backdrop'dan (40) yuqori
+       bo'lishi SHART, aks holda drawer ochilganda niqob uni bosib qoladi. */
+    --z-mobile-sidebar: 45;
+    /* AppSidebar.vue flyout paneli — mobil drawer'dan yuqori, lekin topbar
+       dropdown'laridan (til/mavzu, 50) past turadi. */
+    --z-sidebar-flyout: 46;
+}

@@ -1,10 +1,16 @@
 <script setup>
 import PanelHeader from './PanelHeader.vue';
 
+// Yo'l harakati vaqti bo'yicha solishtirma jadvali — "Yer usti transporti"
+// rejimida "Yo'lovchilar oqimi solishtirmasi" (metroga tegishli) o'rniga
+// chiqadi. Ertalabki/kechki vaqt bo'limlariga bo'lingan, ikkita kunni
+// solishtiradigan hujjatdagi jadvalning aniq nusxasi.
 defineProps({
-    rows: { type: Array, required: true } // [{ time, current, previous, diff, pct }] — diff/pct null bo'lishi mumkin
+    compareLabel1: { type: String, default: '' },
+    compareLabel2: { type: String, default: '' },
+    morningRows: { type: Array, required: true }, // [{ no, time, v1, v2, diff, pct }]
+    eveningRows: { type: Array, required: true } // [{ no, time, v1, v2, diff, pct }] — v2/diff/pct null bo'lishi mumkin
 });
-const emit = defineEmits(['view-full']);
 
 function cls(v) {
     if (v === null || v === undefined) return 'cell-muted';
@@ -13,48 +19,65 @@ function cls(v) {
     return 'cell-muted';
 }
 function fmtNum(v) {
-    return v === null || v === undefined ? '\u2013' : v.toLocaleString('uz-UZ');
+    return v === null || v === undefined ? '–' : v.toLocaleString('uz-UZ');
 }
 function fmtDiff(v) {
-    if (v === null || v === undefined) return '\u2013';
+    if (v === null || v === undefined) return '–';
     return v > 0 ? `+${v.toLocaleString('uz-UZ')}` : v.toLocaleString('uz-UZ');
 }
 function fmtPct(v) {
-    if (v === null || v === undefined) return '\u2013';
+    if (v === null || v === undefined) return '–';
     return v > 0 ? `+${v}%` : `${v}%`;
 }
 </script>
 
 <template>
     <section class="panel">
-        <PanelHeader icon="pi pi-clock" icon-bg="#dcfce7" icon-color="#16a34a" title="2. Yo'l harakati (ertalabki vaqt)" />
+        <PanelHeader icon="pi pi-clock" icon-bg="#dbeafe" icon-color="#2563eb" title="Yo'l harakati vaqti bo'yicha solishtirma" />
 
         <div class="table-scroll">
             <table>
                 <thead>
                     <tr>
-                        <th>Vaqt</th>
-                        <th>Ukv davri</th>
-                        <th>Utgan yil</th>
-                        <th>Farqi</th>
-                        <th>%</th>
+                        <th rowspan="2" class="col-no">№</th>
+                        <th rowspan="2" class="col-time">Harakat vaqti</th>
+                        <th colspan="2">O'quv davri</th>
+                        <th colspan="2">O'sish farqi</th>
+                    </tr>
+                    <tr>
+                        <th class="sub">{{ compareLabel1 }}</th>
+                        <th class="sub">{{ compareLabel2 }}</th>
+                        <th class="sub">sonda</th>
+                        <th class="sub">%</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="row in rows" :key="row.time">
-                        <td class="cell-strong">{{ row.time }}</td>
-                        <td class="cell-muted">{{ fmtNum(row.current) }}</td>
-                        <td class="cell-muted">{{ fmtNum(row.previous) }}</td>
+                    <tr class="section-row">
+                        <td colspan="6">Ertalabki vaqt</td>
+                    </tr>
+                    <tr v-for="row in morningRows" :key="'m' + row.no">
+                        <td class="col-no">{{ row.no }}.</td>
+                        <td class="col-time">{{ row.time }}</td>
+                        <td class="cell-muted">{{ fmtNum(row.v1) }}</td>
+                        <td class="cell-muted">{{ fmtNum(row.v2) }}</td>
+                        <td :class="cls(row.diff)">{{ fmtDiff(row.diff) }}</td>
+                        <td :class="cls(row.pct)">{{ fmtPct(row.pct) }}</td>
+                    </tr>
+
+                    <tr class="section-row">
+                        <td colspan="6">Kechki vaqt</td>
+                    </tr>
+                    <tr v-for="row in eveningRows" :key="'e' + row.no">
+                        <td class="col-no">{{ row.no }}.</td>
+                        <td class="col-time">{{ row.time }}</td>
+                        <td class="cell-muted">{{ fmtNum(row.v1) }}</td>
+                        <td class="cell-muted">{{ fmtNum(row.v2) }}</td>
                         <td :class="cls(row.diff)">{{ fmtDiff(row.diff) }}</td>
                         <td :class="cls(row.pct)">{{ fmtPct(row.pct) }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
-
-        <a href="#" class="footer-link" @click.prevent="emit('view-full')">
-            To'liq jadval <i class="pi pi-arrow-right"></i>
-        </a>
     </section>
 </template>
 
@@ -65,39 +88,61 @@ function fmtPct(v) {
     background: var(--lt-card, #fff);
     padding: 1.2rem 1.3rem;
     height: 100%;
+    min-height: 0;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 .table-scroll {
-    overflow-x: auto;
     flex: 1;
+    min-height: 0;
+    overflow: auto;
 }
 table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 0.85rem;
 }
-thead th {
-    text-align: left;
-    font-size: 0.72rem;
-    font-weight: 600;
+th,
+td {
+    border: 1px solid var(--lt-border, #e5e7eb);
+    padding: 0.55rem 0.5rem;
+    text-align: center;
+    white-space: nowrap;
+}
+thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+thead tr:first-child th {
+    background: #f1f5f9;
+    color: #1f2937;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+thead tr:last-child th.sub {
+    background: #f8fafc;
     color: var(--lt-text-secondary, #6b7280);
-    padding: 0.55rem 0.5rem;
-    border-bottom: 1px solid var(--lt-border, #e5e7eb);
-    background: var(--surface-hover, #f9fafb);
-    white-space: nowrap;
+    font-weight: 600;
+    font-size: 0.75rem;
 }
-tbody td {
-    padding: 0.55rem 0.5rem;
-    font-size: 0.8rem;
-    border-bottom: 1px solid var(--lt-border, #f1f2f4);
-    white-space: nowrap;
+.col-no {
+    width: 2rem;
+}
+.col-time {
+    text-align: left;
+    font-weight: 600;
+    color: var(--lt-text, #111827);
+}
+.section-row td {
+    background: #eef2f7;
+    color: var(--lt-text, #111827);
+    font-weight: 700;
+    text-align: left;
 }
 .cell-muted {
     color: var(--lt-text-secondary, #6b7280);
-}
-.cell-strong {
-    font-weight: 700;
-    color: var(--lt-text, #111827);
 }
 .diff--up {
     color: #16a34a;
@@ -106,18 +151,5 @@ tbody td {
 .diff--down {
     color: #dc2626;
     font-weight: 700;
-}
-.footer-link {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    margin-top: 0.9rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #2563eb;
-    text-decoration: none;
-}
-.footer-link i {
-    font-size: 0.65rem;
 }
 </style>

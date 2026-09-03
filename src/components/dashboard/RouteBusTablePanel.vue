@@ -6,7 +6,7 @@ import { computed } from 'vue';
 // PrimeVue DataTable orqali chiqariladi, jadval oxirida ustunlar bo'yicha JAMI qatori.
 const props = defineProps({
     title: { type: String, default: "Avtobuslarning holati (avtobuslar saroyi bo'yicha)" },
-    rows: { type: Array, required: true } // [{ name, soz, nosoz, yonalishda, yonalishdaEmas, toxtabTurgan, gpsBor, gpsYoq }]
+    rows: { type: Array, required: true } // [{ name, soz, nosoz, yonalishda, yonalishdaEmas, toxtabTurgan, gpsBor, gpsYoq, kameraBor, kameraYoq }]
 });
 
 const rowsWithTotal = computed(() => props.rows.map((row) => ({ ...row, jami: row.soz + row.nosoz })));
@@ -22,9 +22,11 @@ const totals = computed(() =>
             acc.toxtabTurgan += row.toxtabTurgan;
             acc.gpsBor += row.gpsBor;
             acc.gpsYoq += row.gpsYoq;
+            acc.kameraBor += row.kameraBor;
+            acc.kameraYoq += row.kameraYoq;
             return acc;
         },
-        { jami: 0, soz: 0, nosoz: 0, yonalishda: 0, yonalishdaEmas: 0, toxtabTurgan: 0, gpsBor: 0, gpsYoq: 0 }
+        { jami: 0, soz: 0, nosoz: 0, yonalishda: 0, yonalishdaEmas: 0, toxtabTurgan: 0, gpsBor: 0, gpsYoq: 0, kameraBor: 0, kameraYoq: 0 }
     )
 );
 </script>
@@ -35,30 +37,36 @@ const totals = computed(() =>
 
         <div class="table-wrap">
             <DataTable :value="rowsWithTotal" data-key="name" size="small" scrollable scroll-height="flex" class="bus-status-table">
-                <Column field="name" header="Avtobuslar saroyi" class="col-name" :footer="'JAMI:'" />
-                <Column field="jami" header="Jami" :footer="String(totals.jami)">
+                <Column field="name" header="Avtobuslar saroyi" class="col-name" />
+                <Column field="jami" header="Jami">
                     <template #body="{ data }"><span class="status-cell status-jami">{{ data.jami }}</span></template>
                 </Column>
-                <Column field="soz" header="Soz" :footer="String(totals.soz)">
+                <Column field="soz" header="Soz">
                     <template #body="{ data }"><span class="status-cell status-soz">{{ data.soz }}</span></template>
                 </Column>
-                <Column field="nosoz" header="Nosoz" :footer="String(totals.nosoz)">
+                <Column field="nosoz" header="Nosoz" >
                     <template #body="{ data }"><span class="status-cell status-nosoz">{{ data.nosoz }}</span></template>
                 </Column>
-                <Column field="yonalishda" header="Yo'nalishda" :footer="String(totals.yonalishda)">
+                <Column field="yonalishda" header="Yo'nalishda" >
                     <template #body="{ data }"><span class="status-cell status-onroute">{{ data.yonalishda }}</span></template>
                 </Column>
-                <Column field="yonalishdaEmas" header="Yo'nalishda emas" :footer="String(totals.yonalishdaEmas)">
+                <Column field="yonalishdaEmas" header="Yo'nalishda emas" >
                     <template #body="{ data }"><span class="status-cell status-offroute">{{ data.yonalishdaEmas }}</span></template>
                 </Column>
-                <Column field="toxtabTurgan" header="To'xtab turibdi" :footer="String(totals.toxtabTurgan)">
+                <Column field="toxtabTurgan" header="To'xtab turibdi">
                     <template #body="{ data }"><span class="status-cell status-idle">{{ data.toxtabTurgan }}</span></template>
                 </Column>
-                <Column field="gpsBor" header="GPS bor" :footer="String(totals.gpsBor)">
+                <Column field="gpsBor" header="GPS bor" >
                     <template #body="{ data }"><span class="status-cell status-soz">{{ data.gpsBor }}</span></template>
                 </Column>
-                <Column field="gpsYoq" header="GPS yo'q" :footer="String(totals.gpsYoq)">
+                <Column field="gpsYoq" header="GPS yo'q" >
                     <template #body="{ data }"><span class="status-cell status-nosoz">{{ data.gpsYoq }}</span></template>
+                </Column>
+                <Column field="kameraBor" header="Kamerasi bor" >
+                    <template #body="{ data }"><span class="status-cell status-soz">{{ data.kameraBor }}</span></template>
+                </Column>
+                <Column field="kameraYoq" header="Kamerasi yo'q" >
+                    <template #body="{ data }"><span class="status-cell status-nosoz">{{ data.kameraYoq }}</span></template>
                 </Column>
             </DataTable>
         </div>
@@ -124,18 +132,18 @@ const totals = computed(() =>
     color: #1f2937;
     font-weight: 700;
     text-align: center;
-    padding: 0.5rem 0.6rem;
+    padding: 0.7rem 0.8rem;
 }
 .bus-status-table :deep(.p-datatable-tbody > tr > td) {
     text-align: center;
-    padding: 0.4rem 0.6rem;
+    padding: 0.6rem 0.8rem;
 }
 .bus-status-table :deep(.p-datatable-tfoot > tr > td) {
     background: #f1f5f9;
     color: #1f2937;
     font-weight: 700;
     text-align: center;
-    padding: 0.5rem 0.6rem;
+    padding: 0.7rem 0.8rem;
 }
 .bus-status-table :deep(.p-datatable-tfoot > tr > td:nth-child(1)) {
     text-align: left;

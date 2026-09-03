@@ -2,13 +2,19 @@
 import { computed } from 'vue';
 import PanelHeader from './PanelHeader.vue';
 
-// Chorraxalar yuklamasi — YXTEM/svetofor sensorlaridan jonli (live) formatda
-// keladigan tirbandlik balli (1-10) ro'yxati. Hozircha ma'lumotlar static —
-// API ulanganda `rows` propi tegishli service javobiga almashtiriladi, kartaning
-// o'zi va "Jonli" indikatori shu zahoti haqiqiy oqimga ishlay boshlaydi.
+// Umumiy "yuklama ro'yxati" karta — chorraxalar va ko'chalar yuklamasi uchun
+// bir xil ko'rinishda ishlatiladi (faqat sarlavha/matn va ma'lumotlar farqlanadi).
+// YXTEM/svetofor sensorlaridan jonli (live) formatda keladigan 1-10 ballik
+// tirbandlik ko'rsatkichi. Hozircha ma'lumotlar static — API ulanganda `rows`
+// propi tegishli service javobiga almashtiriladi, kartaning o'zi va "Jonli"
+// indikatori shu zahoti haqiqiy oqimga ishlay boshlaydi.
 const props = defineProps({
-    title: { type: String, default: 'Chorraxalar yuklamasi' },
-    rows: { type: Array, required: true } // [{ name, score }] — score: 1-10 ball
+    title: { type: String, required: true },
+    icon: { type: String, default: 'pi pi-directions' },
+    iconBg: { type: String, default: '#fee2e2' },
+    iconColor: { type: String, default: '#dc2626' },
+    rows: { type: Array, required: true }, // [{ name, score }] — score: 1-10 ball
+    locationWord: { type: String, default: 'kesishmasida' } // ogohlantirish matnida: "... {locationWord} N ballik tirbandlik"
 });
 
 function level(score) {
@@ -27,14 +33,14 @@ const critical = computed(() => sortedRows.value.filter((r) => r.lvl === 'critic
 <template>
     <section class="panel">
         <div class="header-row">
-            <PanelHeader icon="pi pi-directions" icon-bg="#fee2e2" icon-color="#dc2626" :title="title" />
+            <PanelHeader :icon="icon" :icon-bg="iconBg" :icon-color="iconColor" :title="title" />
             <span class="live-badge"><span class="live-dot"></span>Jonli</span>
         </div>
 
         <div v-if="critical.length" class="alert-banner">
             <i class="pi pi-exclamation-triangle"></i>
             <span v-for="(row, i) in critical" :key="row.name">
-                <strong>{{ row.name }}</strong> kesishmasida <strong>{{ row.score }} ballik</strong> tirbandlik aniqlandi!<template v-if="i < critical.length - 1"> </template>
+                <strong>{{ row.name }}</strong> {{ locationWord }} <strong>{{ row.score }} ballik</strong> tirbandlik aniqlandi!<template v-if="i < critical.length - 1"> </template>
             </span>
         </div>
 

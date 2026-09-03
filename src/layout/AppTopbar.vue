@@ -91,7 +91,7 @@ function selectLang(code) {
 <template>
     <header class="layout-topbar">
         <router-link to="/dashboard" class="topbar-logo-link">
-            <span class="topbar-logo-text">CODD</span>
+            <span class="topbar-logo-text">YHTEM</span>
         </router-link>
 
         <div class="layout-topbar-actions">

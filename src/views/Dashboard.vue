@@ -90,11 +90,11 @@ const kpis = [
         iconBg: '#ccfbf1',
         iconColor: '#0d9488',
         label: "Ta'lim",
-        value: '463',
+        value: '416',
         subStats: [
-            { label: 'OTM', value: '234' },
-            { label: 'Maktablar', value: '123' },
-            { label: "Bog'chalar", value: '13' }
+            { label: 'OTM', value: '95' },
+            { label: 'Maktablar', value: '328' },
+            { label: "Bog'chalar", value: '0' }
         ]
     },
     {

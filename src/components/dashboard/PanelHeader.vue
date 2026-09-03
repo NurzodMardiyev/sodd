@@ -20,7 +20,7 @@ defineProps({
     display: flex;
     align-items: center;
     gap: 0.65rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
 }
 .panel-icon {
     width: 2.1rem;
